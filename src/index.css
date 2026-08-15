@@ -41,6 +41,7 @@
 html, body {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
   background-color: var(--bg-dark);
   background-image: 
@@ -52,12 +53,14 @@ html, body {
 #root {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Prevent accidental scrolling on arrow keys */
+/* Prevent accidental scrolling on arrow keys and touch bouncing */
 body {
   overscroll-behavior: none;
+  touch-action: pan-x pan-y;
 }
