@@ -49,9 +49,9 @@ export function checkPlayerArrowCollision(player, arrow) {
   // Hitbox distance
   const dist = distToSegment(player.x, player.y, tailX, tailY, tipX, tipY);
   
-  // Forgiving collision radius (70% of visual size)
-  const hitRadius = (player.radius * 0.75) + ((arrow.width || 12) * 0.4);
-  const nearMissRadius = player.radius + 24;
+  // Forgiving collision radius (65% of player size + tip width)
+  const hitRadius = (player.radius * 0.65) + ((arrow.width || 12) * 0.35);
+  const nearMissRadius = player.radius + 26;
 
   const collided = dist <= hitRadius;
   const nearMiss = !collided && dist <= nearMissRadius;

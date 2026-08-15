@@ -28,32 +28,36 @@ export function getLevelConfig(lvl) {
   const level = Math.max(1, Math.min(100, Math.floor(lvl)));
   const progress = (level - 1) / 99; // 0.0 to 1.0
 
-  // 1. Survival time: 15s at lvl 1 -> 50s at lvl 100
-  let survivalTime = Math.round(15 + progress * 30 + (level % 10 === 0 ? 5 : 0));
-  if (level === 100) survivalTime = 60; // Grand finale
+  // 1. Survival time: 12s at lvl 1 -> 45s at lvl 99 (50s on boss lvl 100)
+  let survivalTime = Math.round(12 + progress * 32 + (level % 10 === 0 ? 3 : 0));
+  if (level === 100) survivalTime = 50;
 
-  // 2. Base arrow speed: 3.8 at lvl 1 -> 9.6 at lvl 100 (high velocity feel)
-  const arrowSpeed = Number((3.8 + progress * 5.4 + (level % 10 === 0 ? 0.5 : 0)).toFixed(2));
+  // 2. Arrow speed: 2.2 (friendly & manageable) -> 7.2 at lvl 100
+  const arrowSpeed = Number((2.2 + progress * 4.8 + (level % 10 === 0 ? 0.3 : 0)).toFixed(2));
 
-  // 3. Spawn rate: 480ms at lvl 1 down to 110ms at lvl 100 (rapid continuous assault)
-  const spawnRate = Math.max(110, Math.round(480 * Math.pow(0.24, progress)));
+  // 3. Spawn rate (ms between spawns): 1200ms at lvl 1 -> 180ms at lvl 100
+  const spawnRate = Math.max(180, Math.round(1200 * Math.pow(0.20, progress)));
 
-  // 4. Max concurrent arrows: 9 at lvl 1 -> 45 at lvl 100
-  const maxArrows = Math.min(48, Math.round(9 + progress * 36));
+  // 4. Max concurrent arrows: 3 at lvl 1 -> 32 at lvl 100
+  const maxArrows = Math.min(35, Math.round(3 + progress * 29));
 
-  // 5. Unlocked Arrow Types (multiple dynamic threats starting from Level 1)
-  const allowedTypes = ['standard', 'fast', 'sine'];
-  if (level >= 3) allowedTypes.push('homing');
-  if (level >= 6) allowedTypes.push('splitter');
-  if (level >= 10) allowedTypes.push('orbital');
-  if (level >= 15) allowedTypes.push('sniper');
+  // 5. Gradual step-by-step Arrow Type progression
+  const allowedTypes = ['standard'];
+  if (level >= 6) allowedTypes.push('fast');
+  if (level >= 12) allowedTypes.push('sine');
+  if (level >= 20) allowedTypes.push('homing');
+  if (level >= 35) allowedTypes.push('splitter');
+  if (level >= 55) allowedTypes.push('orbital');
+  if (level >= 75) allowedTypes.push('sniper');
 
-  // 6. Spawn wave formations (aggressive patterns right from the beginning)
-  const allowedFormations = ['single', 'double', 'crossfire'];
-  if (level >= 3) allowedFormations.push('burst');
-  if (level >= 5) allowedFormations.push('surround');
-  if (level >= 8) allowedFormations.push('pincer');
-  if (level >= 12) allowedFormations.push('vortex');
+  // 6. Gradual step-by-step Wave Formation progression
+  const allowedFormations = ['single'];
+  if (level >= 5) allowedFormations.push('double');
+  if (level >= 15) allowedFormations.push('crossfire');
+  if (level >= 28) allowedFormations.push('burst');
+  if (level >= 45) allowedFormations.push('pincer');
+  if (level >= 65) allowedFormations.push('surround');
+  if (level >= 85) allowedFormations.push('vortex');
 
   // 7. Special level flags
   const isBossLevel = level % 10 === 0 || level === 100;
