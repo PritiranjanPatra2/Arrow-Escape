@@ -103,7 +103,12 @@ export default function Instructions({ onBack, onPlay }) {
 
               <div className="arrow-type-card">
                 <div className="arrow-badge orange-badge">Orbital</div>
-                <div className="arrow-spec">Curves in a vortex vortex arc to trap your movement.</div>
+                <div className="arrow-spec">Curves in a vortex arc to trap your movement.</div>
+              </div>
+
+              <div className="arrow-type-card">
+                <div className="arrow-badge cyan-badge" style={{ background: 'rgba(0, 255, 255, 0.2)', color: '#00ffff' }}>Sniper Beam</div>
+                <div className="arrow-spec">Ultra high-speed lightning shot with pinpoint trajectory.</div>
               </div>
             </div>
           </section>

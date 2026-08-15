@@ -123,6 +123,17 @@ export default function Game({
     setLives(3);
     setTimeSurvived(0);
     setGameState('PLAYING');
+    // Immediately launch initial attacker wave
+    setTimeout(() => {
+      if (gameStateRef.current.state === 'PLAYING') {
+        const initTypes = cfg.allowedTypes;
+        const count = Math.min(4, Math.max(2, Math.floor(cfg.maxArrows * 0.35)));
+        for (let k = 0; k < count; k++) {
+          const t = initTypes[Math.floor(Math.random() * initTypes.length)];
+          spawnArrow(t);
+        }
+      }
+    }, 100);
   }, []);
 
   // Keyboard handlers
@@ -169,7 +180,8 @@ export default function Game({
   const spawnArrow = (type = 'standard', customOrigin = null, customTarget = null, customSpeed = null) => {
     const g = gameStateRef.current;
     const cfg = g.levelConfig;
-    const speed = customSpeed || cfg.arrowSpeed * (type === 'fast' ? 1.65 : type === 'orbital' ? 0.9 : 1.0);
+    const speedMult = type === 'sniper' ? 2.2 : type === 'fast' ? 1.65 : type === 'orbital' ? 0.9 : 1.0;
+    const speed = customSpeed || cfg.arrowSpeed * speedMult;
 
     let startX = 0;
     let startY = 0;
@@ -212,6 +224,7 @@ export default function Game({
     if (type === 'homing') color = '#ff00aa';
     if (type === 'splitter') color = '#a855f7';
     if (type === 'orbital') color = '#00f0ff';
+    if (type === 'sniper') color = '#00ffff';
 
     const arrow = {
       id: Math.random(),
@@ -224,8 +237,8 @@ export default function Game({
       vy: Math.sin(angle) * speed,
       speed,
       angle,
-      length: type === 'fast' ? 38 : 28,
-      width: type === 'fast' ? 8 : 12,
+      length: type === 'sniper' ? 46 : type === 'fast' ? 38 : 28,
+      width: type === 'sniper' ? 7 : type === 'fast' ? 8 : 12,
       color,
       distTraveled: 0,
       sinePhase: Math.random() * Math.PI * 2,
@@ -258,7 +271,7 @@ export default function Game({
       spawnArrow(type);
       setTimeout(() => {
         if (gameStateRef.current.state === 'PLAYING') spawnArrow(type);
-      }, 140);
+      }, 120);
     } else if (formation === 'crossfire') {
       // Opposite walls
       spawnArrow(type, { x: -20, y: ARENA_HEIGHT * 0.35 }, { x: ARENA_WIDTH, y: ARENA_HEIGHT * 0.65 });
@@ -280,6 +293,25 @@ export default function Game({
       spawnArrow(type, { x: midX, y: ARENA_HEIGHT + 20 }, { x: midX, y: midY });
       spawnArrow(type, { x: -20, y: midY }, { x: midX, y: midY });
       spawnArrow(type, { x: ARENA_WIDTH + 20, y: midY }, { x: midX, y: midY });
+    } else if (formation === 'pincer') {
+      // Dual flank ambush
+      spawnArrow(type, { x: -20, y: -20 }, { x: g.player.x, y: g.player.y });
+      spawnArrow(type, { x: ARENA_WIDTH + 20, y: -20 }, { x: g.player.x, y: g.player.y });
+    } else if (formation === 'vortex') {
+      // Rapid sequential 4-edge flurry
+      const edges = [
+        { x: ARENA_WIDTH * 0.25, y: -20 },
+        { x: ARENA_WIDTH + 20, y: ARENA_HEIGHT * 0.25 },
+        { x: ARENA_WIDTH * 0.75, y: ARENA_HEIGHT + 20 },
+        { x: -20, y: ARENA_HEIGHT * 0.75 },
+      ];
+      edges.forEach((pt, idx) => {
+        setTimeout(() => {
+          if (gameStateRef.current.state === 'PLAYING') {
+            spawnArrow(type, pt, { x: g.player.x, y: g.player.y });
+          }
+        }, idx * 75);
+      });
     }
   };
 
