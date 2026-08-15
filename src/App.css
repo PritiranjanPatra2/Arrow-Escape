@@ -155,12 +155,14 @@
 .menu-container {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: max(16px, env(safe-area-inset-top, 16px)) 16px max(14px, env(safe-area-inset-bottom, 14px)) 16px;
+  box-sizing: border-box;
 }
 
 .menu-bg-canvas {
@@ -175,8 +177,8 @@
 
 .menu-top-bar {
   position: absolute;
-  top: 24px;
-  right: 24px;
+  top: max(16px, env(safe-area-inset-top, 16px));
+  right: 16px;
   z-index: 10;
 }
 
@@ -206,9 +208,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 520px;
+  max-width: 480px;
   width: 100%;
-  gap: 32px;
+  gap: clamp(16px, 3.5vh, 28px);
 }
 
 .title-block {
@@ -216,7 +218,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  width: 100%;
 }
 
 .title-logo-icon {
@@ -231,13 +234,17 @@
 
 .game-main-title {
   font-family: var(--font-display);
-  font-size: clamp(2.8rem, 7vw, 4.5rem);
+  font-size: clamp(1.65rem, 7.5vw, 3.8rem);
   font-weight: 900;
-  letter-spacing: 0.08em;
-  line-height: 1;
+  letter-spacing: clamp(0.04em, 1.2vw, 0.08em);
+  line-height: 1.1;
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
   text-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+  max-width: 100%;
+  text-align: center;
 }
 
 .title-neon-cyan {
@@ -252,10 +259,13 @@
 
 .game-tagline {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
+  font-size: clamp(0.58rem, 2.5vw, 0.82rem);
+  letter-spacing: clamp(0.06em, 1vw, 0.16em);
   color: var(--text-muted);
   text-transform: uppercase;
+  text-align: center;
+  max-width: 100%;
+  line-height: 1.3;
 }
 
 .menu-buttons {
