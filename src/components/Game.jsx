@@ -97,6 +97,7 @@ export default function Game({
   const initLevel = useCallback((lvlNum) => {
     const cfg = getLevelConfig(lvlNum);
     const g = gameStateRef.current;
+    g.state = 'PLAYING';
     g.levelConfig = cfg;
     g.timeLeft = cfg.survivalTime;
     g.totalTime = cfg.survivalTime;
@@ -104,36 +105,38 @@ export default function Game({
     g.score = 0;
     g.multiplier = 1;
     g.multiplierTimer = 0;
-    g.lives = 3;
+    g.lives = cfg.playerLives || 3;
     g.shake = 0;
+    g.lastSync = 0;
     g.player.x = ARENA_WIDTH / 2;
     g.player.y = ARENA_HEIGHT / 2;
     g.player.vx = 0;
     g.player.vy = 0;
     g.player.angle = -Math.PI / 2;
-    g.player.invulnerable = false;
-    g.player.invulnerableTimer = 0;
+    g.player.invulnerable = true;
+    g.player.invulnerableTimer = 1.0;
+    g.player.flash = false;
     g.arrows = [];
     g.particles.clear();
-    spawnTimerRef.current = 0;
+    g.joystickVector = { x: 0, y: 0, magnitude: 0 };
+    g.keys = {
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false,
+      KeyW: false,
+      KeyS: false,
+      KeyA: false,
+      KeyD: false,
+    };
+    spawnTimerRef.current = cfg.spawnRate - 50;
 
     setTimeLeft(cfg.survivalTime);
     setScore(0);
     setMultiplier(1);
-    setLives(3);
+    setLives(cfg.playerLives || 3);
     setTimeSurvived(0);
     setGameState('PLAYING');
-    // Immediately launch initial attacker wave
-    setTimeout(() => {
-      if (gameStateRef.current.state === 'PLAYING') {
-        const initTypes = cfg.allowedTypes;
-        const count = Math.min(4, Math.max(2, Math.floor(cfg.maxArrows * 0.35)));
-        for (let k = 0; k < count; k++) {
-          const t = initTypes[Math.floor(Math.random() * initTypes.length)];
-          spawnArrow(t);
-        }
-      }
-    }, 100);
   }, []);
 
   // Keyboard handlers

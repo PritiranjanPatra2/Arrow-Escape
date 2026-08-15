@@ -89,6 +89,7 @@ export default function App() {
 
       {currentScreen === 'GAME' && (
         <Game
+          key={selectedLevel}
           levelNumber={selectedLevel}
           soundEnabled={soundEnabled}
           onToggleSound={handleToggleSound}
