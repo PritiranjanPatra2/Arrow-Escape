@@ -88,6 +88,50 @@ export default function Game({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const bgCanvasRef = useRef(null);
+
+  // Pre-render static arena background matrix once (saves ~40 draw calls per frame)
+  useEffect(() => {
+    const bgCanvas = document.createElement('canvas');
+    bgCanvas.width = ARENA_WIDTH;
+    bgCanvas.height = ARENA_HEIGHT;
+    const bgCtx = bgCanvas.getContext('2d');
+
+    // Fill background
+    bgCtx.fillStyle = '#0b0d17';
+    bgCtx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+
+    // Draw Grid Matrix Lines
+    bgCtx.strokeStyle = 'rgba(0, 240, 255, 0.05)';
+    bgCtx.lineWidth = 1;
+    const gridSize = 40;
+    for (let x = 0; x <= ARENA_WIDTH; x += gridSize) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(x, 0);
+      bgCtx.lineTo(x, ARENA_HEIGHT);
+      bgCtx.stroke();
+    }
+    for (let y = 0; y <= ARENA_HEIGHT; y += gridSize) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, y);
+      bgCtx.lineTo(ARENA_WIDTH, y);
+      bgCtx.stroke();
+    }
+    bgCanvasRef.current = bgCanvas;
+  }, []);
+
+  // Auto-pause when user switches apps or minimizes browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden && gameStateRef.current.state === 'PLAYING') {
+        gameStateRef.current.state = 'PAUSED';
+        setGameState('PAUSED');
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   // Sync state between React and game loop
   useEffect(() => {
     gameStateRef.current.state = gameState;
@@ -576,25 +620,12 @@ export default function Game({
         ctx.translate(dx, dy);
       }
 
-      // Background Clear
-      ctx.fillStyle = '#0b0d17';
-      ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
-
-      // Draw Grid Matrix Lines
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.05)';
-      ctx.lineWidth = 1;
-      const gridSize = 40;
-      for (let x = 0; x <= ARENA_WIDTH; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, ARENA_HEIGHT);
-        ctx.stroke();
-      }
-      for (let y = 0; y <= ARENA_HEIGHT; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(ARENA_WIDTH, y);
-        ctx.stroke();
+      // Fast Pre-rendered Background Matrix
+      if (bgCanvasRef.current) {
+        ctx.drawImage(bgCanvasRef.current, 0, 0);
+      } else {
+        ctx.fillStyle = '#0b0d17';
+        ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
       }
 
       // Draw Arena Bounding Neon Perimeter

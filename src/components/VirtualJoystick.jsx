@@ -16,7 +16,7 @@ export default function VirtualJoystick({ onMove }) {
     const dy = clientY - centerRef.current.y;
     const dist = Math.hypot(dx, dy);
 
-    if (dist === 0) {
+    if (dist <= 3) {
       setKnobPos({ x: 0, y: 0 });
       onMove({ x: 0, y: 0, magnitude: 0 });
       return;
@@ -29,12 +29,13 @@ export default function VirtualJoystick({ onMove }) {
 
     setKnobPos({ x: kx, y: ky });
 
-    // Normalized move vector (-1 to 1)
-    const normX = (kx / maxRadius);
-    const normY = (ky / maxRadius);
-    const magnitude = clampedDist / maxRadius;
+    // Smooth responsive sensitivity curve for micro-dodging precision
+    const normMag = clampedDist / maxRadius;
+    const responsiveMag = Math.pow(normMag, 1.12);
+    const normX = Math.cos(angle) * responsiveMag;
+    const normY = Math.sin(angle) * responsiveMag;
 
-    onMove({ x: normX, y: normY, magnitude });
+    onMove({ x: normX, y: normY, magnitude: responsiveMag });
   }, [onMove]);
 
   const handleTouchStart = (e) => {
@@ -49,6 +50,10 @@ export default function VirtualJoystick({ onMove }) {
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
       };
+    }
+
+    if (navigator.vibrate) {
+      try { navigator.vibrate(8); } catch (_) {}
     }
 
     setActive(true);
