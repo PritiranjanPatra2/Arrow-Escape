@@ -335,12 +335,17 @@ export default function Game({
         // 1. Update Survival Timer
         g.timeLeft = Math.max(0, g.timeLeft - dt);
         g.timeSurvived += dt;
-        setTimeLeft(g.timeLeft);
-        setTimeSurvived(g.timeSurvived);
 
         // Score ticks
         g.score += Math.round(dt * 100 * g.multiplier * g.levelConfig.scoreMultiplier);
-        setScore(g.score);
+
+        // Throttle React state updates to 10Hz (every 100ms) to prevent 60fps React re-render lag
+        if (!gameStateRef.current.lastSync || now - gameStateRef.current.lastSync > 100) {
+          gameStateRef.current.lastSync = now;
+          setTimeLeft(g.timeLeft);
+          setTimeSurvived(g.timeSurvived);
+          setScore(g.score);
+        }
 
         // Multiplier Decay
         if (g.multiplierTimer > 0) {
@@ -361,6 +366,7 @@ export default function Game({
           soundManager.playLevelCompleteSound();
           const finalScore = g.score + g.lives * 1500;
           setScore(finalScore);
+          setTimeLeft(0);
           const updated = saveGameProgress(levelNumber, finalScore, g.timeSurvived, g.lives);
           if (onProgressUpdated && updated) onProgressUpdated(updated);
           setGameState('LEVEL_COMPLETE');
@@ -423,8 +429,10 @@ export default function Game({
 
         if (curSpeed > 0.2) {
           player.angle = Math.atan2(player.vy, player.vx);
-          // Emit thruster particle trail
-          g.particles.emitPlayerTrail(player.x, player.y, player.vx, player.vy, g.levelConfig.theme.primary);
+          // Emit thruster particle trail lightly
+          if (Math.random() > 0.3) {
+            g.particles.emitPlayerTrail(player.x, player.y, player.vx, player.vy, g.levelConfig.theme.primary);
+          }
         }
 
         // Invulnerability frame update
@@ -491,8 +499,8 @@ export default function Game({
           arrow.y += arrow.vy;
           arrow.distTraveled += arrow.speed;
 
-          // Emit contrail
-          if (Math.random() > 0.4) {
+          // Emit contrail lightly
+          if (Math.random() > 0.75) {
             g.particles.emitArrowContrail(arrow.x, arrow.y, arrow.angle, arrow.color);
           }
 
@@ -586,15 +594,12 @@ export default function Game({
       // Draw Arena Bounding Neon Perimeter
       ctx.strokeStyle = g.levelConfig.theme.primary;
       ctx.lineWidth = 3;
-      ctx.shadowColor = g.levelConfig.theme.primary;
-      ctx.shadowBlur = 12;
       ctx.strokeRect(6, 6, ARENA_WIDTH - 12, ARENA_HEIGHT - 12);
-      ctx.shadowBlur = 0;
 
       // Draw Particles
       g.particles.draw(ctx);
 
-      // Draw Arrows
+      // Draw Arrows (Optimized for smooth 60fps)
       g.arrows.forEach((arrow) => {
         ctx.save();
         ctx.translate(arrow.x, arrow.y);
@@ -603,8 +608,6 @@ export default function Game({
         ctx.fillStyle = arrow.color;
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.5;
-        ctx.shadowColor = arrow.color;
-        ctx.shadowBlur = 10;
 
         const len = arrow.length;
         const halfW = arrow.width / 2;
@@ -618,7 +621,7 @@ export default function Game({
         ctx.fill();
         ctx.stroke();
 
-        // High-tech arrow core dot
+        // Arrow core dot
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(len / 4, 0, 2, 0, Math.PI * 2);

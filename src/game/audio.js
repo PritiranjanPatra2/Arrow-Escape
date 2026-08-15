@@ -70,35 +70,42 @@ class SoundSystem {
     this.init();
     if (!this.ctx) return;
 
+    // Throttle spawn sounds to prevent audio node congestion
+    const nowTime = performance.now();
+    if (this._lastSpawnSound && nowTime - this._lastSpawnSound < 220) {
+      return;
+    }
+    this._lastSpawnSound = nowTime;
+
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
-      if (type === 'fast') {
+      if (type === 'fast' || type === 'sniper') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(900, now);
-        osc.frequency.exponentialRampToValueAtTime(300, now + 0.07);
-        gain.gain.setValueAtTime(0.06 * this.volume, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.06);
+        gain.gain.setValueAtTime(0.05 * this.volume, now);
       } else if (type === 'homing') {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(450, now);
-        osc.frequency.linearRampToValueAtTime(700, now + 0.08);
-        gain.gain.setValueAtTime(0.08 * this.volume, now);
+        osc.frequency.linearRampToValueAtTime(700, now + 0.07);
+        gain.gain.setValueAtTime(0.06 * this.volume, now);
       } else {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(200, now + 0.06);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
         gain.gain.setValueAtTime(0.04 * this.volume, now);
       }
 
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.masterGain || this.ctx.destination);
 
       osc.start(now);
-      osc.stop(now + 0.09);
+      osc.stop(now + 0.08);
     } catch (e) {}
   }
 
