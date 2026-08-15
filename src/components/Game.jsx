@@ -363,6 +363,7 @@ export default function Game({
 
         // 2. Check Level Completion
         if (g.timeLeft <= 0) {
+          g.state = 'LEVEL_COMPLETE';
           soundManager.playLevelCompleteSound();
           const finalScore = g.score + g.lives * 1500;
           setScore(finalScore);
@@ -370,14 +371,15 @@ export default function Game({
           const updated = saveGameProgress(levelNumber, finalScore, g.timeSurvived, g.lives);
           if (onProgressUpdated && updated) onProgressUpdated(updated);
           setGameState('LEVEL_COMPLETE');
-          return;
         }
 
         // 3. Arrow Spawner logic
-        spawnTimerRef.current += dt * 1000;
-        if (spawnTimerRef.current >= g.levelConfig.spawnRate) {
-          spawnTimerRef.current = 0;
-          triggerSpawnWave();
+        if (g.state === 'PLAYING') {
+          spawnTimerRef.current += dt * 1000;
+          if (spawnTimerRef.current >= g.levelConfig.spawnRate) {
+            spawnTimerRef.current = 0;
+            triggerSpawnWave();
+          }
         }
 
         // 4. Update Player Physics
@@ -526,9 +528,10 @@ export default function Game({
 
             // Check Game Over
             if (g.lives <= 0) {
+              g.state = 'GAME_OVER';
               soundManager.playGameOverSound();
               setGameState('GAME_OVER');
-              return;
+              break;
             }
             continue;
           }

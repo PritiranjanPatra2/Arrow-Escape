@@ -151,12 +151,12 @@ class SoundSystem {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now + idx * 0.1);
 
-        gain.gain.setValueAtTime(0, now + idx * 0.1);
+        gain.gain.setValueAtTime(0.001, now + idx * 0.1);
         gain.gain.linearRampToValueAtTime(0.18 * this.volume, now + idx * 0.1 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+        gain.gain.linearRampToValueAtTime(0.0001, now + idx * 0.1 + 0.35);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(this.masterGain || this.ctx.destination);
 
         osc.start(now + idx * 0.1);
         osc.stop(now + idx * 0.1 + 0.36);
@@ -180,12 +180,12 @@ class SoundSystem {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(freq, now + idx * 0.14);
 
-        gain.gain.setValueAtTime(0, now + idx * 0.14);
+        gain.gain.setValueAtTime(0.001, now + idx * 0.14);
         gain.gain.linearRampToValueAtTime(0.15 * this.volume, now + idx * 0.14 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.14 + 0.4);
+        gain.gain.linearRampToValueAtTime(0.0001, now + idx * 0.14 + 0.4);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(this.masterGain || this.ctx.destination);
 
         osc.start(now + idx * 0.14);
         osc.stop(now + idx * 0.14 + 0.42);
