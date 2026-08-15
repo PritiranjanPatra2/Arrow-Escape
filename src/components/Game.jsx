@@ -691,12 +691,14 @@ export default function Game({
           height={ARENA_HEIGHT}
           className="game-canvas"
         />
-
-        {/* Mobile Virtual Joystick */}
-        {isMobile && gameState === 'PLAYING' && (
-          <VirtualJoystick onMove={handleJoystickMove} />
-        )}
       </div>
+
+      {/* Mobile Virtual Joystick placed in bottom control zone */}
+      {isMobile && gameState === 'PLAYING' && (
+        <div className="mobile-controls-area">
+          <VirtualJoystick onMove={handleJoystickMove} />
+        </div>
+      )}
 
       {/* PAUSE MODAL */}
       {gameState === 'PAUSED' && (
